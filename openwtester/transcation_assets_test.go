@@ -18,6 +18,7 @@ package openwtester
 import (
 	"github.com/blocktree/openwallet/openw"
 	"testing"
+	"time"
 
 	"github.com/blocktree/openwallet/log"
 	"github.com/blocktree/openwallet/openwallet"
@@ -118,43 +119,54 @@ func testSubmitTransactionStep(tm *openw.WalletManager, rawTx *openwallet.RawTra
 }
 
 func TestTransfer_ERC20(t *testing.T) {
+
+	addrs := []string{
+		//"0x065881528680c7794594c136e145e94b8eae6908",
+		//"0x51cfa12d6390dba967ad8f0bd9c040b5564e8ece",
+		//"0x71010e21e2f7aaf9b6ef5dc651aeb380ba0d8e97",
+		//"0x850c16cd1d6e1e440d8147c8190d6b250e50244b",
+		//"0xa5b2006965e33993f4ca0082d16c6521a6d0daf7",
+		//"0xaf3eafcd23d1110174118053b9d10f51b60483f5",
+
+		"0xfb5cd467bc2d88f7308aa6838bc89bc3e53adb70",
+		"0x0c18d28ad4a0be2f6fa81317ac03081996d09317",
+	}
+
 	tm := testInitWalletManager()
 	walletID := "W8uQM5k5NLZEF3ge4Vx2wgxHPiHFQkdsZs"
 	accountID := "AvE1MqXm8gqm7hKR79S1DcZiCSHeCvyLX4x4SxAi154n" //0xc97ac4202b860e381659851c8f3e272554aa9d6e
-	to := "0xaf3eafcd23d1110174118053b9d10f51b60483f5"
 
 	contract := openwallet.SmartContract{
-		Address:  "0xd9ee08ef73437956762f8a43638eb7684fbaed4b",
+		Address:  "0x46ecadaa38f0562f2108bde63fc605ccaaad649e",
 		Symbol:   "FAC",
-		Name:     "fukubukuro",
-		Token:    "TFAC",
-		Decimals: 2,
+		Name:     "FUQI-TEST",
+		Token:    "TFUQ",
+		Decimals: 18,
 	}
 
-	testGetAssetsAccountBalance(tm, walletID, accountID)
+	for _, to := range addrs {
+		testGetAssetsAccountTokenBalance(tm, walletID, accountID, contract)
 
-	testGetAssetsAccountTokenBalance(tm, walletID, accountID, contract)
+		rawTx, err := testCreateTransactionStep(tm, walletID, accountID, to, "1000", "", &contract)
+		if err != nil {
+			return
+		}
 
-	rawTx, err := testCreateTransactionStep(tm, walletID, accountID, to, "3.67", "", &contract)
-	if err != nil {
-		return
+		_, err = testSignTransactionStep(tm, rawTx)
+		if err != nil {
+			return
+		}
+
+		_, err = testVerifyTransactionStep(tm, rawTx)
+		if err != nil {
+			return
+		}
+
+		_, err = testSubmitTransactionStep(tm, rawTx)
+		if err != nil {
+			return
+		}
 	}
-
-	_, err = testSignTransactionStep(tm, rawTx)
-	if err != nil {
-		return
-	}
-
-	_, err = testVerifyTransactionStep(tm, rawTx)
-	if err != nil {
-		return
-	}
-
-	_, err = testSubmitTransactionStep(tm, rawTx)
-	if err != nil {
-		return
-	}
-
 }
 
 func TestSummary_ERC20(t *testing.T) {
@@ -201,4 +213,52 @@ func TestSummary_ERC20(t *testing.T) {
 		}
 	}
 
+}
+
+func TestTransfer_ERC20_Timer(t *testing.T) {
+
+	addrs := []string{
+		"0x065881528680c7794594c136e145e94b8eae6908",
+	}
+
+	tm := testInitWalletManager()
+	walletID := "W8uQM5k5NLZEF3ge4Vx2wgxHPiHFQkdsZs"
+	accountID := "AvE1MqXm8gqm7hKR79S1DcZiCSHeCvyLX4x4SxAi154n" //0xc97ac4202b860e381659851c8f3e272554aa9d6e
+
+	contract := openwallet.SmartContract{
+		Address:  "0x46ecadaa38f0562f2108bde63fc605ccaaad649e",
+		Symbol:   "FAC",
+		Name:     "FUQI-TEST",
+		Token:    "TFUQ",
+		Decimals: 18,
+	}
+
+	for {
+
+		for _, to := range addrs {
+			testGetAssetsAccountTokenBalance(tm, walletID, accountID, contract)
+
+			rawTx, err := testCreateTransactionStep(tm, walletID, accountID, to, "1", "", &contract)
+			if err != nil {
+				return
+			}
+
+			_, err = testSignTransactionStep(tm, rawTx)
+			if err != nil {
+				return
+			}
+
+			_, err = testVerifyTransactionStep(tm, rawTx)
+			if err != nil {
+				return
+			}
+
+			_, err = testSubmitTransactionStep(tm, rawTx)
+			if err != nil {
+				return
+			}
+		}
+
+		time.Sleep(8 * time.Second)
+	}
 }

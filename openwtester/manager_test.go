@@ -1,6 +1,9 @@
 package openwtester
 
 import (
+	"encoding/hex"
+	"fmt"
+	"github.com/blocktree/openwallet/hdkeystore"
 	"github.com/blocktree/openwallet/log"
 	"github.com/blocktree/openwallet/openw"
 	"github.com/blocktree/openwallet/openwallet"
@@ -111,7 +114,7 @@ func TestWalletManager_CreateAddress(t *testing.T) {
 	tm := testInitWalletManager()
 
 	walletID := "W8uQM5k5NLZEF3ge4Vx2wgxHPiHFQkdsZs"
-	accountID := "AvE1MqXm8gqm7hKR79S1DcZiCSHeCvyLX4x4SxAi154n"
+	accountID := "cm3dSCFP47yhgPfhYLab8ChprH2wHfwrWtEuSEkNW29"
 	address, err := tm.CreateAddress(testApp, walletID, accountID, 5)
 	if err != nil {
 		log.Error(err)
@@ -128,17 +131,22 @@ func TestWalletManager_GetAddressList(t *testing.T) {
 	tm := testInitWalletManager()
 
 	walletID := "W8uQM5k5NLZEF3ge4Vx2wgxHPiHFQkdsZs"
-	accountID := "AvE1MqXm8gqm7hKR79S1DcZiCSHeCvyLX4x4SxAi154n" //0xc97ac4202b860e381659851c8f3e272554aa9d6e
-	//accountID := "cm3dSCFP47yhgPfhYLab8ChprH2wHfwrWtEuSEkNW29" //0xaf3eafcd23d1110174118053b9d10f51b60483f5
+	//accountID := "AvE1MqXm8gqm7hKR79S1DcZiCSHeCvyLX4x4SxAi154n" //0xc97ac4202b860e381659851c8f3e272554aa9d6e
+	accountID := "cm3dSCFP47yhgPfhYLab8ChprH2wHfwrWtEuSEkNW29" //0xaf3eafcd23d1110174118053b9d10f51b60483f5
 	list, err := tm.GetAddressList(testApp, walletID, accountID, 0, -1, false)
 	if err != nil {
 		log.Error("unexpected error:", err)
 		return
 	}
-	for i, w := range list {
-		log.Info("address[", i, "] :", w.Address)
+	for _, w := range list {
+		fmt.Printf("%s \n", w.Address)
 	}
 	log.Info("address count:", len(list))
 
 	tm.CloseDB(testApp)
+}
+
+func TestGenerateSeed(t *testing.T) {
+	seed, _ := hdkeystore.GenerateSeed(32)
+	log.Infof("seed: %s", hex.EncodeToString(seed))
 }
